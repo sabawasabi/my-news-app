@@ -20,9 +20,9 @@ jobs:
           pip install uv
       - name: Install dependencies with uv
         run: |
-          uv pip install -r pyproject.toml
+          uv pip install --system .  # --system を追加して、カレントディレクトリ(.)をインストール
       - name: Run daily news script
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          uv run main.py
+          python main.py  # uv run ではなく、直接 python で実行
