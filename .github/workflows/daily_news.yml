@@ -4,6 +4,7 @@ on:
   schedule:
     # 毎日21:00 (JST) = 12:00 (UTC)
     - cron: '0 12 * * *'
+  workflow_dispatch:  # ← この1行を追加（手動実行ボタンを出します）
 
 jobs:
   run-daily-news:
