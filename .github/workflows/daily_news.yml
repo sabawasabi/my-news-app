@@ -1,0 +1,27 @@
+name: Daily News
+
+on:
+  schedule:
+    # 毎日21:00 (JST) = 12:00 (UTC)
+    - cron: '0 12 * * *'
+
+jobs:
+  run-daily-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install uv
+        run: |
+          pip install uv
+      - name: Install dependencies with uv
+        run: |
+          uv pip install -r requirements.txt
+      - name: Run daily news script
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          uv run main.py
