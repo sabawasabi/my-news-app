@@ -8,6 +8,14 @@ load_dotenv()
 
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 
+# 特定キーワードが含まれるタイトルを太字にするユーティリティ
+HIGHLIGHT_KEYWORDS = ["Python", "AI"]  # ここに追加したいキーワードを列挙
+
+def bold_if_keyword(title):
+    if any(kw in title for kw in HIGHLIGHT_KEYWORDS):
+        return f"*{title}*"
+    return title
+
 def post_news_to_slack(news_list):
     """
     ニュースのリスト（(title, url)）をSlackに投げる。
@@ -18,8 +26,8 @@ def post_news_to_slack(news_list):
         print("SLACK_WEBHOOK_URL is not set in the .env file.")
         return
     for title, url in news_list:
-        # タイトルを太字、冒頭に絵文字、タイトルとURLの間を1行空ける
-        text = f"📢 *{title}*\n\n{url}"
+        # タイトルを太字（事前にbold_if_keywordで処理）、冒頭に絵文字、タイトルとURLの間を1行空ける
+        text = f"📢 {title}\n\n{url}"
         payload = {
             "text": text
         }
@@ -79,7 +87,8 @@ def fetch_itmedia_news_top(limit: int = 5):
     for title, href in news_links:
         if href not in seen and len(title) > 0:
             seen.add(href)
-            unique_news.append((title, href))
+            # 特定キーワードがあればタイトルを太字に
+            unique_news.append((bold_if_keyword(title), href))
 
     # 上位 limit 件だけ取り出し
     news_to_notify = unique_news[:limit]
