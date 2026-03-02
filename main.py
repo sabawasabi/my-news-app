@@ -37,9 +37,11 @@ def post_news_to_slack(news_list):
         except Exception as e:
             print(f"Error posting to Slack: {e}")
 
-def fetch_itmedia_news_top(limit: int = 5):
-    keywords = ["IT","AI", "クラウド", "セキュリティ"]  # フィルタリング用キーワードを定義
-
+def fetch_itmedia_news_top(limit: int = 10):
+    """
+    ITmediaトップページから最新ニュース上位limit件を取得し、出力・通知する。
+    キーワードフィルタはせず、上位記事すべて取得する。
+    """
     url = "https://www.itmedia.co.jp/news/"
     headers = {
         "User-Agent": (
@@ -77,9 +79,9 @@ def fetch_itmedia_news_top(limit: int = 5):
         elif not href.startswith("http"):
             href = base_url + "/" + href.lstrip("/")
 
-        # 見出しに keywords のいずれかが含まれている場合のみ追加
-        if any(keyword in title for keyword in keywords):
-            news_links.append((title, href))
+        news_links.append((title, href))
+        if len(news_links) >= limit:
+            break
 
     # 重複を除外
     seen = set()
@@ -90,10 +92,10 @@ def fetch_itmedia_news_top(limit: int = 5):
             # 特定キーワードがあればタイトルを太字に
             unique_news.append((bold_if_keyword(title), href))
 
-    # 上位 limit 件だけ取り出し
+    # limit 件だけ取り出し
     news_to_notify = unique_news[:limit]
 
-    # 上位 limit 件だけ出力
+    # limit 件だけ出力
     for i, (title, href) in enumerate(news_to_notify, start=1):
         print(f"{i}. {title}")
         print(f"   {href}")
@@ -104,4 +106,4 @@ def fetch_itmedia_news_top(limit: int = 5):
         post_news_to_slack(news_to_notify)
 
 if __name__ == "__main__":
-    fetch_itmedia_news_top(limit=5)
+    fetch_itmedia_news_top(limit=10)
