@@ -9,7 +9,7 @@ load_dotenv()
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 
 # 特定キーワードが含まれるタイトルを太字にするユーティリティ
-HIGHLIGHT_KEYWORDS = ["Python", "AI"]  # ここに追加したいキーワードを列挙
+HIGHLIGHT_KEYWORDS = ["IT","Python", "AI"]  # ここに追加したいキーワードを列挙
 
 def bold_if_keyword(title):
     if any(kw in title for kw in HIGHLIGHT_KEYWORDS):
@@ -38,7 +38,7 @@ def post_news_to_slack(news_list):
             print(f"Error posting to Slack: {e}")
 
 def fetch_itmedia_news_top(limit: int = 5):
-    keywords = ["AI", "クラウド", "セキュリティ"]  # フィルタリング用キーワードを定義
+    keywords = ["IT","AI", "クラウド", "セキュリティ"]  # フィルタリング用キーワードを定義
 
     url = "https://www.itmedia.co.jp/news/"
     headers = {
