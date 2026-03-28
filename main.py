@@ -16,38 +16,39 @@ def clean_text(text):
     return text.strip()
 
 def _get_news_robust(url, keywords=None):
-    headers = {"User-Agent": "Mozilla/5.0"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     try:
         resp = requests.get(url, headers=headers, timeout=15)
-        
-        # 修正ポイント：XMLパーサーがなくても動くようにする
-        try:
-            # まずは理想的なXMLモードで試す
-            soup = BeautifulSoup(resp.content, "xml")
-        except Exception:
-            # もしXMLモードが使えなければ、標準のHTMLモードで解析する
-            soup = BeautifulSoup(resp.content, "html.parser")
+        # GitHub Actions環境（lxmlなし）でも動くよう、標準の html.parser を使用
+        soup = BeautifulSoup(resp.content, "html.parser")
         
         items = []
-        # XMLでもHTMLでも「item」または「entry」という名前のタグを探す
+        # item(RSS系) または entry(Atom系) を探す
         raw_items = soup.find_all(["item", "entry"])
         
         for raw_item in raw_items:
+            # 1. タイトル取得
             title_tag = raw_item.find("title")
             title = clean_text(title_tag.get_text()) if title_tag else ""
             
+            # 2. リンク取得 (ここがZenn復活のキモです)
             link = ""
             link_tag = raw_item.find("link")
             if link_tag:
-                # 属性(href)か中身のテキストか、取れる方を採用
-                link = link_tag.get("href") or link_tag.get_text().strip() or ""
+                # Zenn(Atom)は href属性にある。4Gamer(RSS)はタグの中身にある。
+                # 両方チェックして、ある方を採用する
+                link = link_tag.get("href") or link_tag.get_text().strip()
             
-            # 4Gamer(RSS 1.0)特有の linkタグが空の場合の対策
+            # 3. 4Gamer(RSS 1.0)特有のリンク補完
             if not link and raw_item.has_attr('rdf:about'):
                 link = raw_item['rdf:about']
 
-            if not title or not link: continue
+            if not title or not link:
+                continue
 
+            # キーワード判定
             if keywords:
                 if any(k.lower() in title.lower() for k in keywords):
                     items.append((title, link))
