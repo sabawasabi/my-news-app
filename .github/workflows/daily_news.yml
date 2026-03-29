@@ -4,25 +4,29 @@ on:
   schedule:
     # 毎日21:00 (JST) = 12:00 (UTC)
     - cron: '0 12 * * *'
-  workflow_dispatch:  # ← この1行を追加（手動実行ボタンを出します）
+  workflow_dispatch:  # 手動実行ボタン
 
 jobs:
   run-daily-news:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install uv
+
+      - name: Install dependencies
         run: |
-          pip install uv
-      - name: Install dependencies with uv
-        run: |
-          uv pip install --system .  # --system を追加して、カレントディレクトリ(.)をインストール
+          # 必要なライブラリを一度にすべてインストール
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 lxml python-dotenv
+
       - name: Run daily news script
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          python main.py  # uv run ではなく、直接 python で実行
+          # 直接実行！
+          python main.py
