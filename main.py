@@ -21,8 +21,8 @@ def _get_news_robust(url, keywords=None):
     }
     try:
         resp = requests.get(url, headers=headers, timeout=15)
-        # GitHub Actions環境（lxmlなし）でも動くよう、標準の html.parser を使用
-        soup = BeautifulSoup(resp.content, "html.parser")
+# XMLモードで解析（これが一番確実です）
+        soup = BeautifulSoup(resp.content, "xml")
         
         items = []
         # item(RSS系) または entry(Atom系) を探す
